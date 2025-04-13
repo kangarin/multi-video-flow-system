@@ -44,6 +44,9 @@ def main():
         "status:stream:*",
         "status:processor:*",
         "status:latency:*",
+        "queue:results:*",
+        "decision:stream:*",
+        "decision:processor:*",
     ]
     
     print("=== 开始清理 Redis 键 ===")

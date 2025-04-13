@@ -169,6 +169,13 @@ class DecisionWriter:
 import time
 
 if __name__ == "__main__":
+
+    # 清除所有.db文件
+    import os
+    db_files = [f for f in os.listdir('.') if f.endswith('.db')]
+    for db_file in db_files:
+        os.remove(db_file)
+
     print("启动调度器循环 - 目标每10秒进行一次决策")
     
     while True:

@@ -397,8 +397,37 @@ class YOLODetector:
             print(f"任务 {task.task_id} 处理完成，用时: {processing_time:.3f}秒")
             self.update_speed_quality_pair(current_model_index, processing_time)
             
-            # 可以选择将结果存储到Redis或数据库
-            # self.redis_client.hset(f"results:task:{task.task_id}", "processing_time", processing_time)
+            # === 发送到汇总器 ===
+            # 更新任务数据
+            processed_frame = encode_frame_base64(results.render()[0])  # 渲染后的图像
+            
+            # 如果extra_info为None，初始化为空字典
+            if task.extra_info is None:
+                task.extra_info = {}
+            
+            # 将检测结果添加到extra_info
+            task.extra_info.update({
+                'processor_id': self.processor_id,
+                'model_used': f"yolov5{self.current_model_name}",
+                'detection_results': results.pandas().xyxy[0].to_dict('records')
+            })
+            
+            # 创建结果任务对象
+            result_task = Task(
+                stream_id=task.stream_id,
+                task_id=task.task_id,
+                generated_time=task.generated_time,
+                frame=processed_frame,  # 使用处理后的帧
+                received_time=task.received_time,
+                start_process_time=task.start_process_time,
+                end_process_time=task.end_process_time,
+                extra_info=task.extra_info
+            )
+            
+            # 将结果推送到Redis队列
+            self.redis_client.lpush(f"queue:results:{task.stream_id}", json.dumps(result_task.to_dict()))
+            print(f"结果已推送到队列 queue:results:{task.stream_id}")
+            # === 发送结束 ===
                 
         except Exception as e:
             print(f"处理任务时出错：{e}")
