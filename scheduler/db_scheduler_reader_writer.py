@@ -149,19 +149,71 @@ class DecisionWriter:
             print(f"写入决策到Redis时出错: {e}")
             return False
         
+# if __name__ == "__main__":
+#     try:
+#         flow_weights, nodes_config, flow_rates, trans_delays, current_queue_lengths = SchedulingDataGetter().get_scheduling_data()
+#         from bo_optimizer_two_phase import TwoPhaseFlowSchedulerAgent
+#         # 创建调度器代理实例
+#         agent = TwoPhaseFlowSchedulerAgent(T=10.0)
+#         config_index_list, stream_distribution_list = agent.get_action(
+#             flow_weights, nodes_config, flow_rates, trans_delays, current_queue_lengths
+#         )
+#         print(f"配置索引列表: {config_index_list}")
+#         print(f"流分配列表: {stream_distribution_list}")
+#         # 将决策写入Redis
+#         writer = DecisionWriter()
+#         success = writer.write_decisions(config_index_list, stream_distribution_list)
+#     except Exception as e:
+#         print(f"获取调度数据时出错: {e}")
+
+import time
+
 if __name__ == "__main__":
-    try:
-        flow_weights, nodes_config, flow_rates, trans_delays, current_queue_lengths = SchedulingDataGetter().get_scheduling_data()
-        from bo_optimizer_two_phase import TwoPhaseFlowSchedulerAgent
-        # 创建调度器代理实例
-        agent = TwoPhaseFlowSchedulerAgent(T=10.0)
-        config_index_list, stream_distribution_list = agent.get_action(
-            flow_weights, nodes_config, flow_rates, trans_delays, current_queue_lengths
-        )
-        print(f"配置索引列表: {config_index_list}")
-        print(f"流分配列表: {stream_distribution_list}")
-        # 将决策写入Redis
-        writer = DecisionWriter()
-        success = writer.write_decisions(config_index_list, stream_distribution_list)
-    except Exception as e:
-        print(f"获取调度数据时出错: {e}")
+    print("启动调度器循环 - 目标每10秒进行一次决策")
+    
+    while True:
+        try:
+            print("\n--- 开始新的调度周期 ---")
+            周期开始时间 = time.time()
+            
+            # 获取当前调度数据
+            flow_weights, nodes_config, flow_rates, trans_delays, current_queue_lengths = SchedulingDataGetter().get_scheduling_data()
+            
+            # 导入并创建调度器代理
+            from bo_optimizer_two_phase import TwoPhaseFlowSchedulerAgent
+            agent = TwoPhaseFlowSchedulerAgent(T=10.0)
+            
+            # 获取调度决策
+            config_index_list, stream_distribution_list = agent.get_action(
+                flow_weights, nodes_config, flow_rates, trans_delays, current_queue_lengths
+            )
+            
+            print(f"配置索引列表: {config_index_list}")
+            print(f"流分配列表: {stream_distribution_list}")
+            
+            # 将决策写入Redis
+            writer = DecisionWriter()
+            success = writer.write_decisions(config_index_list, stream_distribution_list)
+            
+            if success:
+                print("成功将决策写入Redis")
+            else:
+                print("将决策写入Redis失败")
+            
+            # 计算本周期耗时
+            周期耗时 = time.time() - 周期开始时间
+            print(f"决策周期在 {周期耗时:.2f} 秒内完成")
+            
+            # 计算需要睡眠的时间以维持10秒的间隔
+            # 如果计算耗时超过10秒，则立即开始下一个周期
+            睡眠时间 = max(0, 10 - 周期耗时)
+            
+            if 睡眠时间 > 0:
+                print(f"等待 {睡眠时间:.2f} 秒直到下一个调度周期...")
+                time.sleep(睡眠时间)
+            else:
+                print("计算耗时超过10秒，立即开始下一个周期")
+            
+        except Exception as e:
+            print(f"调度周期中出错: {e}")
+            time.sleep(1)  # 出错后短暂暂停再重试
