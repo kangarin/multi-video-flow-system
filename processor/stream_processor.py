@@ -33,6 +33,23 @@ def decode_frame_base64(base64_string):
     buffer = np.frombuffer(img_data, dtype=np.uint8)
     return cv2.imdecode(buffer, cv2.IMREAD_COLOR)
 
+import socket
+
+def get_local_ip():
+    """获取本机IP地址"""
+    try:
+        # 创建一个UDP套接字
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # 连接到一个外部地址，这样socket会获取本机的对外IP地址
+        # 实际上不会发送数据
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception as e:
+        print(f"获取本机IP地址失败: {e}")
+        return "127.0.0.1"  # 失败时返回本地回环地址
+
 # 初始化Flask和SocketIO
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -108,6 +125,8 @@ class YOLODetector:
     def register_with_redis(self, host, port):
         """将处理器注册到Redis中用于服务发现"""
         try:
+            if host is None or host == "0.0.0.0":
+                host = get_local_ip()
             # 为此处理器创建唯一键
             processor_key = f"processor:{self.processor_id}"
             

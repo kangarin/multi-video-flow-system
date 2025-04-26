@@ -126,13 +126,11 @@ class ResultAggregator:
         # 提取处理信息
         processor_id = task.extra_info.get('processor_id', 'unknown')
         model_used = task.extra_info.get('model_used', 'unknown')
-        processing_time = task.extra_info.get('processing_time', 0)
         detections = task.extra_info.get('detection_results', [])
         
         # 输出任务处理摘要
         print(f"\n--------- 流 {stream_id} - 任务 {task.task_id} 已交付 ---------")
         print(f"处理器: {processor_id}, 模型: {model_used}")
-        print(f"处理时间: {processing_time:.3f}秒")
         print(f"检测到 {len(detections)} 个对象")
         
         # 计算延迟
