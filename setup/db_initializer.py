@@ -30,12 +30,12 @@ class RedisKeysCleaner:
 
 def main():
     parser = argparse.ArgumentParser(description='清理 Redis 中的特定键')
-    parser.add_argument('--host', type=str, default='localhost', help='Redis 主机地址')
-    parser.add_argument('--port', type=int, default=6379, help='Redis 端口')
+    parser.add_argument('--redis-host', type=str, default='localhost', help='Redis 主机地址')
+    parser.add_argument('--redis-port', type=int, default=6379, help='Redis 端口')
     
     args = parser.parse_args()
     
-    cleaner = RedisKeysCleaner(host=args.host, port=args.port)
+    cleaner = RedisKeysCleaner(host=args.redis_host, port=args.redis_port)
     
     # 要清理的键模式列表
     patterns = [

@@ -148,47 +148,39 @@ class DecisionWriter:
         except Exception as e:
             print(f"写入决策到Redis时出错: {e}")
             return False
-        
-# if __name__ == "__main__":
-#     try:
-#         flow_weights, nodes_config, flow_rates, trans_delays, current_queue_lengths = SchedulingDataGetter().get_scheduling_data()
-#         from bo_optimizer_two_phase import TwoPhaseFlowSchedulerAgent
-#         # 创建调度器代理实例
-#         agent = TwoPhaseFlowSchedulerAgent(T=10.0)
-#         config_index_list, stream_distribution_list = agent.get_action(
-#             flow_weights, nodes_config, flow_rates, trans_delays, current_queue_lengths
-#         )
-#         print(f"配置索引列表: {config_index_list}")
-#         print(f"流分配列表: {stream_distribution_list}")
-#         # 将决策写入Redis
-#         writer = DecisionWriter()
-#         success = writer.write_decisions(config_index_list, stream_distribution_list)
-#     except Exception as e:
-#         print(f"获取调度数据时出错: {e}")
 
 import time
+import argparse
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='调度器代理')
+    parser.add_argument('--redis-host', type=str, default='localhost', help='Redis 主机地址')
+    parser.add_argument('--redis-port', type=int, default=6379, help='Redis 端口')
+    args = parser.parse_args()
+    redis_host = args.redis_host
+    redis_port = args.redis_port
 
     # 清除所有.db文件
     import os
     db_files = [f for f in os.listdir('.') if f.endswith('.db')]
     for db_file in db_files:
         os.remove(db_file)
+    
+    data_getter = SchedulingDataGetter(redis_host=redis_host, redis_port=redis_port)
+    # 导入并创建调度器代理
+    from bo_optimizer_two_phase import TwoPhaseFlowSchedulerAgent
+    agent = TwoPhaseFlowSchedulerAgent(T=10.0)
+    data_writer = DecisionWriter(redis_host=redis_host, redis_port=redis_port)
 
     print("启动调度器循环 - 目标每10秒进行一次决策")
-    
     while True:
         try:
             print("\n--- 开始新的调度周期 ---")
             周期开始时间 = time.time()
             
             # 获取当前调度数据
-            flow_weights, nodes_config, flow_rates, trans_delays, current_queue_lengths = SchedulingDataGetter().get_scheduling_data()
-            
-            # 导入并创建调度器代理
-            from bo_optimizer_two_phase import TwoPhaseFlowSchedulerAgent
-            agent = TwoPhaseFlowSchedulerAgent(T=10.0)
+            flow_weights, nodes_config, flow_rates, trans_delays, current_queue_lengths = data_getter.get_scheduling_data()
             
             # 获取调度决策
             config_index_list, stream_distribution_list = agent.get_action(
@@ -199,8 +191,7 @@ if __name__ == "__main__":
             print(f"流分配列表: {stream_distribution_list}")
             
             # 将决策写入Redis
-            writer = DecisionWriter()
-            success = writer.write_decisions(config_index_list, stream_distribution_list)
+            success = data_writer.write_decisions(config_index_list, stream_distribution_list)
             
             if success:
                 print("成功将决策写入Redis")
