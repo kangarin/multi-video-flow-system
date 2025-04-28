@@ -1,0 +1,19 @@
+FROM multi-video-flow-base:amd64
+
+# 复制汇总器相关代码
+COPY aggregator/ /app/aggregator/
+
+# 设置默认命令
+CMD ["/bin/bash"]
+
+# docker build -t repo:5000/dwy/stream-aggregator:latest -f Dockerfile.aggregator .
+
+# docker run \
+#   --rm \
+#   --name aggregator \
+#   --network host \
+#   --entrypoint python \
+#   stream-aggregator:latest \
+#   aggregator/stream_aggregator.py \
+#   --redis-host 0.0.0.0 \
+#   --redis-port 6379

@@ -1,0 +1,9 @@
+FROM multi-video-flow-base:arm64
+
+# 复制处理器相关代码
+COPY processor/ /app/processor/
+
+# 设置默认命令
+CMD ["/bin/bash"]
+
+# docker build --platform linux/arm64 -t repo:5000/dwy/stream-processor:arm64 -f Dockerfile.processor.arm64 .

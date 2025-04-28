@@ -1,0 +1,12 @@
+FROM multi-video-flow-base:arm64
+
+# 复制生成器相关代码
+COPY generator/ /app/generator/
+
+# 创建视频目录挂载点
+RUN mkdir -p /videos
+
+# 设置默认命令
+CMD ["/bin/bash"]
+
+# docker build --platform linux/arm64 -t repo:5000/dwy/stream-generator:arm64 -f Dockerfile.generator.arm64 .

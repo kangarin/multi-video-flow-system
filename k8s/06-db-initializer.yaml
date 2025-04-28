@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-initializer
+  namespace: video-flow-system
+spec:
+  template:
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/hostname: cloud.kubeedge  # 指定要部署的节点
+      containers:
+      - name: db-initializer
+        image: repo:5000/dwy/db-initializer:latest
+        command: ["python3"]
+        args: ["setup/db_initializer.py", "--redis-host", "$(REDIS_HOST)", "--redis-port", "$(REDIS_PORT)"]
+        env:
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-port
+      restartPolicy: Never
+  backoffLimit: 4

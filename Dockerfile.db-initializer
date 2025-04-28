@@ -1,0 +1,19 @@
+FROM multi-video-flow-base:amd64
+
+# 复制数据库初始化器相关代码
+COPY setup/ /app/setup/
+
+# 设置默认命令
+CMD ["/bin/bash"]
+
+# docker build -t repo:5000/dwy/db-initializer:latest -f Dockerfile.db-initializer .
+
+# docker run \
+#   --rm \
+#   --name db-initializer \
+#   --network host \
+#   --entrypoint python \
+#   db-initializer:latest \
+#   setup/db_initializer.py \
+#   --redis-host 0.0.0.0 \
+#   --redis-port 6379

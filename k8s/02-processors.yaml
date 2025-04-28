@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stream-processor-1
+  namespace: video-flow-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stream-processor
+      id: "1"
+  template:
+    metadata:
+      labels:
+        app: stream-processor
+        id: "1"
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/hostname: edge5   # 指定要部署的节点
+      containers:
+      - name: processor
+        image: repo:5000/dwy/stream-processor:latest
+        command: ["python3"]
+        args: ["processor/stream_processor.py", "--id", "1", "--port", "7777", "--model", "s", "--redis-host", "$(REDIS_HOST)", "--redis-port", "$(REDIS_PORT)"]
+        env:
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-port
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stream-processor-2
+  namespace: video-flow-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stream-processor
+      id: "2"
+  template:
+    metadata:
+      labels:
+        app: stream-processor
+        id: "2"
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/hostname: cloud.kubeedge    # 指定要部署的节点
+      containers:
+      - name: processor
+        image: repo:5000/dwy/stream-processor:latest
+        command: ["python3"]
+        args: ["processor/stream_processor.py", "--id", "2", "--port", "7778", "--model", "s", "--redis-host", "$(REDIS_HOST)", "--redis-port", "$(REDIS_PORT)"]
+        env:
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-port

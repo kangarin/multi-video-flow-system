@@ -1,0 +1,22 @@
+FROM multi-video-flow-base:latest
+
+# 复制处理器相关代码
+COPY processor/ /app/processor/
+
+# 设置默认命令
+CMD ["/bin/bash"]
+
+# docker build -t stream-processor:latest -f Dockerfile.processor .
+
+# docker run \
+#   --rm \
+#   --name processor-1 \
+#   --network host \
+#   --entrypoint python \
+#   stream-processor:latest \
+#   processor/stream_processor.py \
+#   --id 1 \
+#   --port 7777 \
+#   --model s \
+#   --redis-host 0.0.0.0 \
+#   --redis-port 6379

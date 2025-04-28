@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stream-generator-1
+  namespace: video-flow-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stream-generator
+      id: "1"
+  template:
+    metadata:
+      labels:
+        app: stream-generator
+        id: "1"
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/hostname: edge5  # 指定要部署的节点
+      containers:
+      - name: generator
+        image: repo:5000/dwy/stream-generator:latest
+        command: ["python3"]
+        args: ["generator/stream_generator.py", "--id", "1", "--video-dir", "/videos", "--redis-host", "$(REDIS_HOST)", "--redis-port", "$(REDIS_PORT)"]
+        env:
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-port
+        volumeMounts:
+        - name: video-storage
+          mountPath: /videos
+      volumes:
+      - name: video-storage
+        hostPath:
+          path: /videos  # 替换为实际的视频路径
+          type: Directory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stream-generator-2
+  namespace: video-flow-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stream-generator
+      id: "2"
+  template:
+    metadata:
+      labels:
+        app: stream-generator
+        id: "2"
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/hostname: edge5  # 指定要部署的节点
+      containers:
+      - name: generator
+        image: repo:5000/dwy/stream-generator:latest
+        command: ["python3"]
+        args: ["generator/stream_generator.py", "--id", "2", "--video-dir", "/videos", "--redis-host", "$(REDIS_HOST)", "--redis-port", "$(REDIS_PORT)"]
+        env:
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-port
+        volumeMounts:
+        - name: video-storage
+          mountPath: /videos
+      volumes:
+      - name: video-storage
+        hostPath:
+          path: /videos  # 替换为实际的视频路径
+          type: Directory

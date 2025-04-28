@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stream-aggregator
+  namespace: video-flow-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stream-aggregator
+  template:
+    metadata:
+      labels:
+        app: stream-aggregator
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/hostname: cloud.kubeedge  # 指定要部署的节点
+      containers:
+      - name: aggregator
+        image: repo:5000/dwy/stream-aggregator:latest
+        command: ["python3"]
+        args: ["aggregator/stream_aggregator.py", "--redis-host", "$(REDIS_HOST)", "--redis-port", "$(REDIS_PORT)"]
+        env:
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: system-config
+              key: redis-port

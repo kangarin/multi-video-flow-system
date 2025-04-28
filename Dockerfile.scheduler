@@ -1,0 +1,19 @@
+FROM multi-video-flow-base:latest
+
+# 复制调度器相关代码
+COPY scheduler/ /app/scheduler/
+
+# 设置默认命令
+CMD ["/bin/bash"]
+
+# docker build -t stream-scheduler:latest -f Dockerfile.scheduler .
+
+# docker run \
+#   --rm \
+#   --name scheduler \
+#   --network host \
+#   --entrypoint python \
+#   stream-scheduler:latest \
+#   scheduler/stream_scheduler.py \
+#  --redis-host 0.0.0.0 \
+#  --redis-port 6379

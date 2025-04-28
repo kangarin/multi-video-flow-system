@@ -1,0 +1,9 @@
+FROM multi-video-flow-base:arm64
+
+# 复制调度器相关代码
+COPY scheduler/ /app/scheduler/
+
+# 设置默认命令
+CMD ["/bin/bash"]
+
+# docker build --platform linux/arm64 -t repo:5000/dwy/stream-scheduler:arm64 -f Dockerfile.scheduler.arm64 .

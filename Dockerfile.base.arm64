@@ -1,0 +1,13 @@
+# arm base image for mac local test
+FROM ultralytics/ultralytics:latest-arm64
+
+# 安装额外的通用依赖
+RUN pip install redis flask flask_socketio optuna
+
+# 设置工作目录
+WORKDIR /app
+
+# 设置Python缓冲区为无缓冲，确保日志及时输出
+ENV PYTHONUNBUFFERED=1
+
+# docker build --platform linux/arm64 -t repo:5000/dwy/multi-video-flow-base:arm64 -f Dockerfile.base.arm64 .     

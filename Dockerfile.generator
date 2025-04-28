@@ -1,0 +1,25 @@
+FROM multi-video-flow-base:latest
+
+# 复制生成器相关代码
+COPY generator/ /app/generator/
+
+# 创建视频目录挂载点
+RUN mkdir -p /videos
+
+# 设置默认命令
+CMD ["/bin/bash"]
+
+# docker build -t repo:5000/dwy/stream-generator:latest -f Dockerfile.generator .
+
+# docker run \
+#   --rm \
+#   --name generator-1 \
+#   --network host \
+#   --entrypoint python \
+#   -v /Users/wenyidai/Development/graduation_projects/model-switch/data:/videos \
+#   stream-generator:latest \
+#   generator/stream_generator.py \
+#   --id 1 \
+#   --video-dir /videos \
+#   --redis-host 0.0.0.0 \
+#   --redis-port 6379
