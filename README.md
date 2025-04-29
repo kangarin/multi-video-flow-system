@@ -17,7 +17,7 @@ python generator/stream_generator.py --id 2 --video-dir /path/to/videos --redis-
 ...
 
 5. 在服务器启动调度器更新决策
-python scheduler/db_scheduler_reader_writer.py --redis-host 0.0.0.0 --redis-port 6379
+python scheduler/stream_scheduler.py --redis-host 0.0.0.0 --redis-port 6379
 
 6. 在服务器启动汇总器
 python aggregator/stream_aggregator.py --redis-host 0.0.0.0 --redis-port 6379
